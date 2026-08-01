@@ -1,29 +1,29 @@
 # Work Log
 
 ---
-Task ID: 1
+Task ID: 2
 Agent: Main Agent
-Task: Build immersive portfolio website for NEXIUM Instagram (nexiumreal)
+Task: Redesign NEXIUM portfolio — Alps-style hero + real Instagram reel gallery
 
 Work Log:
-- Scraped Instagram profile via web reader (behind login wall)
-- Searched web for @nexiumreal profile info: NEXIUM | Movie Edits, ~2K followers, 44 posts, daily cinematic edits
-- Initialized fullstack dev environment
-- Designed and built dark cinematic portfolio with:
-  - Film grain + scanlines overlay effects
-  - Cinematic letterbox bars on scroll
-  - Animated hero section with parallax scroll
-  - Masonry gallery grid with category filters (All/Movies/Series)
-  - Film perforation details on gallery cards
-  - Stats section (2K+ followers, 44+ edits, 500K+ likes, 50K+ daily reach)
-  - About section with brand story + partner @thenovaflix
-  - CTA section with flicker animation
-  - Custom dark theme with amber/gold accent colors
-- Fixed lint error (ref access during render)
-- Fixed runtime error (missing useRef import)
-- Verified with agent browser: all sections render, filters work, smooth scroll works
+- Scraped The Alps (the-alps.webflow.io) reference for multiplane parallax design
+- Searched and found 8 actual nexiumreal Instagram reel URLs with movie titles
+- Completely rewrote globals.css — removed old effects, added parallax layer system, loading screen, vignette, lens flare
+- Rewrote page.tsx:
+  - Loading screen with scale-up text animation (like The Alps)
+  - Multiplane parallax hero with 4 depth layers responding to mouse movement
+  - Film strip silhouettes, nebula gradients, light leaks, vignette
+  - Gallery: only 8 real reels from Instagram, each card links directly to the reel URL
+  - No unwanted text — just reel title, year, genre, and "Watch on Instagram" link
+  - Minimal footer
+- Updated next.config.ts: removed standalone output, added allowedDevOrigins
+- Updated package.json: clean build/start scripts, renamed to nexium-portfolio
+- Updated .gitignore: excluded dev artifacts
+- Production build passes cleanly
+- ESLint passes with 0 errors
 
 Stage Summary:
-- Produced: /home/z/my-project/src/app/page.tsx (main page), /home/z/my-project/src/app/globals.css (custom styles), /home/z/my-project/src/app/layout.tsx (layout)
-- Screenshot saved: /home/z/my-project/download/nexium-portfolio.png
-- Site runs on port 3000, fully interactive
+- Key design: Alps-inspired multiplane parallax hero + clean reel grid
+- 8 real reel links: Back to the Future, The Best of Me, The Dictator, The Magicians, Love Story, Crown for Christmas, Police Academy, Good Time
+- Build: `next build` succeeds, static generation works
+- Vercel-ready: no standalone output, clean scripts

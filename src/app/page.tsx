@@ -1,587 +1,312 @@
 "use client";
 
+import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
-import {
-  Play,
-  Film,
-  Instagram,
-  Flame,
-  Clapperboard,
-  Star,
-  TrendingUp,
-  ChevronDown,
-  ArrowUpRight,
-  Volume2,
-  Zap,
-} from "lucide-react";
+import { Instagram, Play, ExternalLink, ChevronDown } from "lucide-react";
 
-/* ───────────────────────────── Data ───────────────────────────── */
+/* ────────────── Your Real Instagram Reels ────────────── */
 
-const EDITS = [
-  { id: 1, title: "The Dark Knight", category: "Movies", year: "2025", likes: "24.5K", gradient: "from-amber-900/80 via-red-950/60 to-black", aspect: "aspect-[9/16]" },
-  { id: 2, title: "Breaking Bad", category: "Series", year: "2025", likes: "18.2K", gradient: "from-cyan-900/80 via-slate-900/60 to-black", aspect: "aspect-[9/14]" },
-  { id: 3, title: "Interstellar", category: "Movies", year: "2025", likes: "31.8K", gradient: "from-orange-900/80 via-amber-950/60 to-black", aspect: "aspect-[9/16]" },
-  { id: 4, title: "Peaky Blinders", category: "Series", year: "2024", likes: "15.7K", gradient: "from-stone-800/80 via-neutral-950/60 to-black", aspect: "aspect-[4/5]" },
-  { id: 5, title: "Oppenheimer", category: "Movies", year: "2024", likes: "42.1K", gradient: "from-yellow-900/80 via-red-950/60 to-black", aspect: "aspect-[9/16]" },
-  { id: 6, title: "The Last of Us", category: "Series", year: "2024", likes: "22.3K", gradient: "from-emerald-900/80 via-slate-950/60 to-black", aspect: "aspect-[9/14]" },
-  { id: 7, title: "Dune: Part Two", category: "Movies", year: "2024", likes: "38.6K", gradient: "from-amber-800/80 via-orange-950/60 to-black", aspect: "aspect-[9/16]" },
-  { id: 8, title: "Mr. Robot", category: "Series", year: "2024", likes: "19.4K", gradient: "from-gray-800/80 via-black to-black", aspect: "aspect-[4/5]" },
+const REELS = [
+  { title: "BACK TO THE FUTURE", year: "1985", genre: "Sci-Fi", url: "https://www.instagram.com/reel/DZpX2FOh6TK/", gradient: "from-amber-900/60 via-orange-950/40 to-black" },
+  { title: "THE BEST OF ME", year: "2014", genre: "Romance", url: "https://www.instagram.com/reel/DZxbxY7huUx/", gradient: "from-rose-900/60 via-red-950/40 to-black" },
+  { title: "THE DICTATOR", year: "2012", genre: "Comedy", url: "https://www.instagram.com/reel/DZr72LgBRLz/", gradient: "from-emerald-900/60 via-teal-950/40 to-black" },
+  { title: "THE MAGICIANS", year: "Series", genre: "Fantasy", url: "https://www.instagram.com/reel/DbV9NbQhqfT/", gradient: "from-violet-900/60 via-purple-950/40 to-black" },
+  { title: "LOVE STORY", year: "1970", genre: "Drama", url: "https://www.instagram.com/reel/DZ-haZBBduO/", gradient: "from-pink-900/60 via-rose-950/40 to-black" },
+  { title: "CROWN FOR CHRISTMAS", year: "2015", genre: "Romance", url: "https://www.instagram.com/reel/DaArbXKBN61/", gradient: "from-sky-900/60 via-blue-950/40 to-black" },
+  { title: "POLICE ACADEMY", year: "1984", genre: "Comedy", url: "https://www.instagram.com/nexiumreal/reels/", gradient: "from-yellow-900/60 via-amber-950/40 to-black" },
+  { title: "GOOD TIME", year: "2017", genre: "Thriller", url: "https://www.instagram.com/p/DbJe1saIzKI/", gradient: "from-red-900/70 via-orange-950/50 to-black" },
 ];
 
-const STATS = [
-  { label: "Followers", value: "2K+", icon: TrendingUp },
-  { label: "Edits Created", value: "44+", icon: Film },
-  { label: "Total Likes", value: "500K+", icon: Flame },
-  { label: "Daily Reach", value: "50K+", icon: Zap },
-];
+/* ────────────── Loading Screen ────────────── */
 
-/* ───────────────────────────── Components ───────────────────────────── */
+function LoadingScreen({ onDone }: { onDone: () => void }) {
+  useEffect(() => {
+    const t = setTimeout(onDone, 2600);
+    return () => clearTimeout(t);
+  }, [onDone]);
 
-function FilmGrainOverlay() {
-  return <div className="film-grain" />;
-}
-
-function ScanlinesOverlay() {
-  return <div className="scanlines" />;
-}
-
-function LetterboxBars({ active }: { active: boolean }) {
   return (
-    <div className={active ? "letterbox-active" : ""}>
-      <div className="letterbox-top" />
-      <div className="letterbox-bottom" />
+    <div className="loading-screen fixed inset-0 z-[200] bg-[#050505] flex items-center justify-center">
+      <div className="loading-text-reveal text-center">
+        <h1 className="text-5xl sm:text-7xl md:text-8xl font-bold tracking-tight text-white">
+          NEXIUM
+        </h1>
+        <div className="mt-3 h-px w-16 mx-auto bg-gradient-to-r from-transparent via-amber-400/60 to-transparent" />
+      </div>
     </div>
   );
 }
 
-function Navbar() {
-  const [hidden, setHidden] = useState(false);
+/* ────────────── Multiplane Parallax Hero (Alps-style) ────────────── */
 
-  useEffect(() => {
-    const handleScroll = () => setHidden(window.scrollY > 100);
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+function ParallaxHero({ loaded }: { loaded: boolean }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mouseRef = useRef({ x: 0, y: 0 });
+  const rafRef = useRef<number>(0);
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    mouseRef.current = {
+      x: (e.clientX / window.innerWidth - 0.5) * 2,
+      y: (e.clientY / window.innerHeight - 0.5) * 2,
+    };
   }, []);
 
-  
+  useEffect(() => {
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, [handleMouseMove]);
+
+  // Smooth animation loop for parallax
+  useEffect(() => {
+    const layerFar = document.getElementById("layer-far");
+    const layerMid = document.getElementById("layer-mid");
+    const layerNear = document.getElementById("layer-near");
+    const layerText = document.getElementById("layer-text");
+    const glow = document.getElementById("lens-glow");
+
+    const animate = () => {
+      const { x, y } = mouseRef.current;
+      if (layerFar) layerFar.style.transform = `translate(${x * -8}px, ${y * -5}px) scale(1.05)`;
+      if (layerMid) layerMid.style.transform = `translate(${x * -15}px, ${y * -10}px) scale(1.1)`;
+      if (layerNear) layerNear.style.transform = `translate(${x * -25}px, ${y * -15}px) scale(1.15)`;
+      if (layerText) layerText.style.transform = `translate(${x * -5}px, ${y * -3}px) scale(${loaded ? 1 : 0.6})`;
+      if (glow) glow.style.transform = `translate(${x * 20}px, ${y * 15}px) scale(1)`;
+      rafRef.current = requestAnimationFrame(animate);
+    };
+    rafRef.current = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [loaded, handleMouseMove]);
+
+  const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start start", "end start"] });
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
+
   return (
-    <motion.nav
-      initial={{ y: -100 }}
-      animate={{ y: hidden ? 0 : -100 }}
-      transition={{ duration: 0.6, ease: [0.76, 0, 0.24, 1] }}
-      className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-black/60 border-b border-white/5"
+    <motion.section
+      ref={containerRef}
+      style={{ opacity: heroOpacity }}
+      className="relative h-screen w-full overflow-hidden"
     >
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded bg-gradient-to-br from-amber-500 to-red-600 flex items-center justify-center">
-            <Clapperboard className="w-4 h-4 text-white" />
-          </div>
-          <span className="font-mono text-sm tracking-[0.3em] text-amber-400 uppercase">
-            Nexium
-          </span>
+      {/* Layer 0: Deep background — dark sky gradient */}
+      <div
+        id="layer-far"
+        className="parallax-layer absolute inset-[-10%] z-0"
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0510] via-[#0d0808] to-[#050505]" />
+        {/* Abstract nebula / atmosphere */}
+        <div className="absolute top-[10%] left-[20%] w-[500px] h-[500px] rounded-full bg-amber-500/[0.03] blur-[120px]" />
+        <div className="absolute bottom-[20%] right-[15%] w-[400px] h-[400px] rounded-full bg-red-500/[0.03] blur-[100px]" />
+        <div className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-orange-500/[0.02] blur-[150px]" />
+      </div>
+
+      {/* Layer 1: Mid — film strip silhouette shapes */}
+      <div
+        id="layer-mid"
+        className="parallax-layer absolute inset-[-15%] z-1"
+      >
+        {/* Horizontal film strip lines */}
+        <div className="absolute top-[15%] left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
+        <div className="absolute top-[35%] left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.03] to-transparent" />
+        <div className="absolute top-[60%] left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.05] to-transparent" />
+        <div className="absolute top-[80%] left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.03] to-transparent" />
+        {/* Film sprocket holes left */}
+        <div className="absolute left-[5%] top-0 bottom-0 flex flex-col justify-around opacity-[0.04]">
+          {Array.from({ length: 20 }).map((_, i) => (
+            <div key={i} className="w-3 h-5 rounded-sm bg-white" />
+          ))}
         </div>
-        <div className="flex items-center gap-6">
-          <a
-            href="https://www.instagram.com/nexiumreal/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 text-sm text-white/60 hover:text-amber-400 transition-colors"
-          >
-            <Instagram className="w-4 h-4" />
-            <span className="hidden sm:inline">@nexiumreal</span>
-          </a>
+        {/* Film sprocket holes right */}
+        <div className="absolute right-[5%] top-0 bottom-0 flex flex-col justify-around opacity-[0.04]">
+          {Array.from({ length: 20 }).map((_, i) => (
+            <div key={i} className="w-3 h-5 rounded-sm bg-white" />
+          ))}
         </div>
       </div>
-    </motion.nav>
-  );
-}
 
-function HeroSection() {
-  const [loaded, setLoaded] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start start", "end start"] });
-  const y = useTransform(scrollYProgress, [0, 1], [0, 200]);
-  const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 1], [1, 1.1]);
+      {/* Layer 2: Near — abstract geometric shapes / light leaks */}
+      <div
+        id="layer-near"
+        className="parallax-layer absolute inset-[-20%] z-2"
+      >
+        {/* Light leak top-right */}
+        <div className="absolute top-0 right-[10%] w-[300px] h-[600px] bg-gradient-to-b from-amber-500/[0.06] to-transparent rotate-12 blur-[60px]" />
+        {/* Light leak bottom-left */}
+        <div className="absolute bottom-0 left-[5%] w-[250px] h-[500px] bg-gradient-to-t from-red-500/[0.04] to-transparent -rotate-6 blur-[50px]" />
+      </div>
 
-  useEffect(() => {
-    const timer = setTimeout(() => setLoaded(true), 300);
-    return () => clearTimeout(timer);
-  }, []);
+      {/* Vignette overlay */}
+      <div className="vignette absolute inset-0 z-[4]" />
 
-  return (
-    <section ref={containerRef} className="relative h-screen flex items-center justify-center overflow-hidden">
-      {/* Animated background */}
-      <motion.div style={{ y, scale }} className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-black via-[#0a0505] to-black" />
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-amber-500/5 blur-[150px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-red-500/5 blur-[120px]" />
-        {/* VHS tracking line */}
-        <div className="vhs-line" />
-        <div className="vhs-line" style={{ animationDelay: "2s" }} />
-      </motion.div>
+      {/* Lens flare glow */}
+      <div
+        id="lens-glow"
+        className="lens-glow absolute top-[20%] right-[20%] w-[300px] h-[300px] z-[3] rounded-full pointer-events-none"
+        style={{
+          background: "radial-gradient(circle, rgba(232,168,73,0.12) 0%, transparent 70%)",
+        }}
+      />
 
-      <motion.div style={{ opacity }} className="relative z-10 text-center px-6 max-w-5xl mx-auto">
-        {/* Pre-title tag */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={loaded ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="flex items-center justify-center gap-2 mb-8"
-        >
-          <div className="w-12 h-px bg-amber-500/50" />
-          <span className="font-mono text-xs tracking-[0.4em] text-amber-400/80 uppercase">
-            Cinematic Portfolio
-          </span>
-          <div className="w-12 h-px bg-amber-500/50" />
-        </motion.div>
-
-        {/* Main title */}
-        <motion.h1
-          initial={{ opacity: 0, y: 40 }}
-          animate={loaded ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 1, delay: 0.5, ease: [0.76, 0, 0.24, 1] }}
-          className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-bold tracking-tighter leading-[0.85]"
-        >
-          <span className="block text-glow bg-gradient-to-b from-white via-white to-white/40 bg-clip-text text-transparent">
+      {/* Center Text — scales in like The Alps */}
+      <div
+        id="layer-text"
+        className={`hero-text absolute inset-0 z-10 flex flex-col items-center justify-center ${loaded ? "visible" : ""}`}
+      >
+        <h1 className="text-7xl sm:text-8xl md:text-[10rem] lg:text-[13rem] font-bold tracking-[-0.04em] leading-[0.85] text-center select-none">
+          <span className="bg-gradient-to-b from-white via-white/90 to-white/30 bg-clip-text text-transparent">
             NEXIUM
           </span>
-          <motion.span
-            initial={{ opacity: 0, x: -30 }}
-            animate={loaded ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.8, delay: 1 }}
-            className="block text-2xl sm:text-3xl md:text-4xl font-light tracking-[0.2em] text-amber-400/90 mt-4"
-          >
-            MOVIE EDITS
-          </motion.span>
-        </motion.h1>
-
-        {/* Subtitle */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={loaded ? { opacity: 1 } : {}}
-          transition={{ duration: 1, delay: 1.3 }}
-          className="mt-8 text-base sm:text-lg text-white/40 max-w-xl mx-auto leading-relaxed font-light"
-        >
-          Daily cinematic edits from the most iconic scenes in movies &amp; series.
-          <br />
-          <span className="text-amber-400/60">Your daily dose of viral content.</span>
-        </motion.p>
-
-        {/* CTA Buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={loaded ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, delay: 1.6 }}
-          className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4"
-        >
+        </h1>
+        <p className="mt-6 text-sm sm:text-base tracking-[0.35em] uppercase text-white/30 font-light">
+          Cinematic Edits
+        </p>
+        <div className="mt-8 flex items-center gap-3">
+          <div className="w-8 h-px bg-white/10" />
           <a
             href="https://www.instagram.com/nexiumreal/"
             target="_blank"
             rel="noopener noreferrer"
-            className="group relative px-8 py-3.5 bg-amber-500 text-black font-medium text-sm tracking-wider uppercase overflow-hidden transition-all duration-300 hover:bg-amber-400"
+            className="text-xs tracking-[0.3em] uppercase text-white/40 hover:text-amber-400 transition-colors duration-300 inline-flex items-center gap-2"
           >
-            <span className="relative z-10 flex items-center gap-2">
-              <Play className="w-4 h-4 fill-current" />
-              Watch on Instagram
-            </span>
+            <Instagram className="w-3.5 h-3.5" />
+            @nexiumreal
           </a>
-          <button
-            onClick={() => document.getElementById("gallery")?.scrollIntoView({ behavior: "smooth" })}
-            className="px-8 py-3.5 border border-white/20 text-white/70 text-sm tracking-wider uppercase hover:border-amber-500/50 hover:text-amber-400 transition-all duration-300"
-          >
-            View Gallery
-          </button>
-        </motion.div>
-      </motion.div>
+          <div className="w-8 h-px bg-white/10" />
+        </div>
+      </div>
 
       {/* Scroll indicator */}
       <motion.div
         initial={{ opacity: 0 }}
-        animate={loaded ? { opacity: 1 } : {}}
-        transition={{ delay: 2.2, duration: 1 }}
-        className="absolute bottom-12 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2"
+        animate={{ opacity: loaded ? 1 : 0 }}
+        transition={{ delay: 3, duration: 1 }}
+        className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2"
       >
-        <span className="font-mono text-[10px] tracking-[0.3em] text-white/30 uppercase">Scroll</span>
+        <span className="text-[10px] tracking-[0.3em] text-white/20 uppercase font-light">Scroll</span>
         <motion.div
-          animate={{ y: [0, 8, 0] }}
+          animate={{ y: [0, 6, 0] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         >
-          <ChevronDown className="w-4 h-4 text-amber-400/50" />
+          <ChevronDown className="w-4 h-4 text-white/20" />
         </motion.div>
       </motion.div>
-    </section>
+    </motion.section>
   );
 }
 
-/* ──────── Edit Card ──────── */
-function EditCard({ edit, index }: { edit: (typeof EDITS)[0]; index: number }) {
-  const [hovered, setHovered] = useState(false);
+/* ────────────── Reels Gallery ────────────── */
 
+function ReelCard({ reel, index }: { reel: (typeof REELS)[number]; index: number }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 60 }}
+    <motion.a
+      href={reel.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      initial={{ opacity: 0, y: 50 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.7, delay: index * 0.08, ease: [0.76, 0, 0.24, 1] }}
-      className={`cinematic-card group relative rounded-xl overflow-hidden cursor-pointer ${edit.aspect}`}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.6, delay: index * 0.06, ease: [0.25, 0.1, 0.25, 1] }}
+      className="reel-card group block aspect-[9/16] cursor-pointer"
     >
-      {/* Gradient background simulating cinematic frame */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${edit.gradient}`} />
-      
-      {/* Simulated film frame elements */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center p-6 z-10">
-        <motion.div
-          animate={{ scale: hovered ? 1.1 : 1, rotate: hovered ? 2 : 0 }}
-          transition={{ duration: 0.4 }}
-          className="w-16 h-16 rounded-full border-2 border-amber-400/30 flex items-center justify-center backdrop-blur-sm bg-black/20 mb-4"
-        >
-          <Play className="w-6 h-6 text-amber-400 ml-1" fill="currentColor" />
-        </motion.div>
-        <div className="text-center">
-          <h3 className="text-white font-bold text-lg tracking-wide">{edit.title}</h3>
-          <p className="text-white/50 text-xs font-mono mt-1 tracking-wider">{edit.category} &middot; {edit.year}</p>
-        </div>
-      </div>
+      {/* Gradient background */}
+      <div className={`absolute inset-0 bg-gradient-to-br ${reel.gradient} transition-transform duration-700 ease-out group-hover:scale-110`} />
 
-      {/* Bottom info overlay */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: hovered ? 1 : 0, y: hovered ? 0 : 20 }}
-        transition={{ duration: 0.3 }}
-        className="absolute bottom-0 left-0 right-0 z-20 p-4 bg-gradient-to-t from-black via-black/80 to-transparent"
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Flame className="w-4 h-4 text-red-400" />
-            <span className="text-sm font-medium text-white">{edit.likes} likes</span>
-          </div>
-          <ArrowUpRight className="w-4 h-4 text-amber-400" />
-        </div>
-      </motion.div>
-
-      {/* Film perforations left side */}
-      <div className="absolute left-0 top-0 bottom-0 w-3 z-20 flex flex-col justify-evenly">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="mx-auto w-1.5 h-2 rounded-sm bg-black/40" />
+      {/* Film perforations */}
+      <div className="absolute left-0 top-0 bottom-0 w-2.5 z-20 flex flex-col justify-evenly opacity-30">
+        {Array.from({ length: 10 }).map((_, i) => (
+          <div key={i} className="mx-auto w-1 h-1.5 rounded-sm bg-white/60" />
         ))}
       </div>
-      {/* Film perforations right side */}
-      <div className="absolute right-0 top-0 bottom-0 w-3 z-20 flex flex-col justify-evenly">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="mx-auto w-1.5 h-2 rounded-sm bg-black/40" />
+      <div className="absolute right-0 top-0 bottom-0 w-2.5 z-20 flex flex-col justify-evenly opacity-30">
+        {Array.from({ length: 10 }).map((_, i) => (
+          <div key={i} className="mx-auto w-1 h-1.5 rounded-sm bg-white/60" />
         ))}
       </div>
 
-      {/* Top-left category badge */}
-      <div className="absolute top-3 left-7 z-20">
-        <span className="px-2.5 py-1 text-[10px] font-mono tracking-wider uppercase bg-black/60 backdrop-blur-sm text-amber-400 rounded-full border border-amber-400/20">
-          {edit.category}
-        </span>
+      {/* Play icon — center */}
+      <div className="absolute inset-0 z-10 flex items-center justify-center">
+        <div className="w-14 h-14 rounded-full border border-white/20 flex items-center justify-center backdrop-blur-sm bg-black/10 transition-all duration-500 group-hover:scale-110 group-hover:border-amber-400/50 group-hover:bg-black/20">
+          <Play className="w-5 h-5 text-white/70 ml-0.5 transition-colors group-hover:text-amber-400" fill="currentColor" />
+        </div>
       </div>
-    </motion.div>
+
+      {/* Bottom info */}
+      <div className="absolute bottom-0 left-0 right-0 z-20 p-5">
+        <p className="text-[10px] tracking-[0.2em] uppercase text-amber-400/70 font-light">
+          {reel.genre} &middot; {reel.year}
+        </p>
+        <h3 className="text-white font-semibold text-base tracking-wide mt-1">
+          {reel.title}
+        </h3>
+        <div className="mt-3 flex items-center gap-1.5 text-white/30 group-hover:text-amber-400 transition-colors duration-300">
+          <ExternalLink className="w-3 h-3" />
+          <span className="text-[10px] tracking-wider uppercase">Watch on Instagram</span>
+        </div>
+      </div>
+    </motion.a>
   );
 }
 
-/* ──────── Gallery Section ──────── */
-function GallerySection() {
-  const [filter, setFilter] = useState<"All" | "Movies" | "Series">("All");
-  const filtered = filter === "All" ? EDITS : EDITS.filter((e) => e.category === filter);
-
+function Gallery() {
   return (
-    <section id="gallery" className="relative py-32 px-6">
-      {/* Section header */}
-      <div className="max-w-7xl mx-auto mb-16">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-          className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6"
-        >
-          <div>
-            <span className="font-mono text-xs tracking-[0.4em] text-amber-400/60 uppercase block mb-3">
-              Featured Work
-            </span>
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight">
-              The <span className="text-amber-400">Gallery</span>
-            </h2>
-          </div>
-          <div className="flex gap-2">
-            {(["All", "Movies", "Series"] as const).map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setFilter(cat)}
-                className={`px-5 py-2 text-xs font-mono tracking-wider uppercase transition-all duration-300 rounded-full border ${
-                  filter === cat
-                    ? "bg-amber-500 text-black border-amber-500"
-                    : "bg-transparent text-white/50 border-white/10 hover:border-amber-500/30 hover:text-amber-400"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Masonry-like grid */}
+    <section className="relative px-4 sm:px-6 pb-20">
       <div className="max-w-7xl mx-auto">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={filter}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4"
-          >
-            {filtered.map((edit, i) => (
-              <div key={edit.id} className="break-inside-avoid">
-                <EditCard edit={edit} index={i} />
-              </div>
-            ))}
-          </motion.div>
-        </AnimatePresence>
-      </div>
-    </section>
-  );
-}
-
-/* ──────── Stats Section ──────── */
-function StatsSection() {
-  return (
-    <section className="relative py-24 px-6">
-      <div className="max-w-5xl mx-auto">
+        {/* Section label */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-          className="rounded-2xl border border-white/5 bg-gradient-to-br from-white/[0.03] to-transparent p-8 sm:p-12 backdrop-blur-sm"
+          className="pt-24 pb-12 text-center"
         >
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {STATS.map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="text-center"
-              >
-                <stat.icon className="w-5 h-5 text-amber-400/60 mx-auto mb-3" />
-                <div className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
-                  {stat.value}
-                </div>
-                <div className="text-xs font-mono tracking-wider text-white/40 uppercase mt-2">
-                  {stat.label}
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          <p className="text-[11px] tracking-[0.4em] uppercase text-white/25 font-light">
+            Reels
+          </p>
         </motion.div>
+
+        {/* Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+          {REELS.map((reel, i) => (
+            <ReelCard key={reel.title} reel={reel} index={i} />
+          ))}
+        </div>
       </div>
     </section>
   );
 }
 
-/* ──────── About Section ──────── */
-function AboutSection() {
-  return (
-    <section className="relative py-32 px-6">
-      <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
-        {/* Left: Visual element */}
-        <motion.div
-          initial={{ opacity: 0, x: -40 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="relative"
-        >
-          <div className="aspect-square rounded-2xl overflow-hidden border border-white/5 relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-amber-950/40 via-black to-red-950/30" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center">
-                <div className="text-8xl sm:text-9xl font-bold text-white/[0.03] tracking-tighter leading-none select-none">
-                  NX
-                </div>
-                <div className="mt-4 flex items-center justify-center gap-3">
-                  <Film className="w-6 h-6 text-amber-400/40" />
-                  <Volume2 className="w-6 h-6 text-amber-400/40" />
-                  <Star className="w-6 h-6 text-amber-400/40" />
-                </div>
-              </div>
-            </div>
-            {/* Film strip decoration */}
-            <div className="absolute top-4 right-4 flex flex-col gap-1.5">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="w-8 h-1 rounded-full bg-amber-400/10" />
-              ))}
-            </div>
-          </div>
-        </motion.div>
+/* ────────────── Footer ────────────── */
 
-        {/* Right: Content */}
-        <motion.div
-          initial={{ opacity: 0, x: 40 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-        >
-          <span className="font-mono text-xs tracking-[0.4em] text-amber-400/60 uppercase block mb-3">
-            About
-          </span>
-          <h2 className="text-4xl sm:text-5xl font-bold tracking-tight mb-6">
-            The Art of
-            <br />
-            <span className="text-amber-400">Cinematic Editing</span>
-          </h2>
-          <div className="space-y-4 text-white/50 leading-relaxed">
-            <p>
-              NEXIUM is a creative hub dedicated to crafting breathtaking cinematic edits from
-              the most iconic moments in film and television. Every edit is a carefully composed
-              visual narrative — blending sound design, color grading, and precise timing to
-              deliver an immersive emotional experience.
-            </p>
-            <p>
-              From the neon-lit streets of Blade Runner to the explosive landscapes of Dune,
-              each piece is designed to make you feel the scene — not just watch it. We believe
-              cinema is the ultimate art form, and every frame deserves to be celebrated.
-            </p>
-          </div>
-
-          {/* Tags */}
-          <div className="flex flex-wrap gap-2 mt-8">
-            {["Color Grading", "Sound Design", "Motion Graphics", "VFX", "Storytelling"].map(
-              (tag) => (
-                <span
-                  key={tag}
-                  className="px-3 py-1.5 text-[11px] font-mono tracking-wider text-amber-400/70 border border-amber-400/15 rounded-full bg-amber-400/5"
-                >
-                  {tag}
-                </span>
-              )
-            )}
-          </div>
-
-          {/* Partner mention */}
-          <div className="mt-10 p-4 rounded-xl border border-white/5 bg-white/[0.02]">
-            <span className="text-xs font-mono tracking-wider text-white/30 uppercase block mb-2">
-              In Partnership With
-            </span>
-            <a
-              href="https://www.instagram.com/thenovaflix/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-lg font-semibold text-white hover:text-amber-400 transition-colors inline-flex items-center gap-2"
-            >
-              @thenovaflix
-              <ArrowUpRight className="w-4 h-4" />
-            </a>
-          </div>
-        </motion.div>
-      </div>
-    </section>
-  );
-}
-
-/* ──────── CTA Section ──────── */
-function CTASection() {
-  return (
-    <section className="relative py-32 px-6">
-      <div className="max-w-4xl mx-auto text-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="relative"
-        >
-          {/* Background glow */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-amber-500/10 blur-[120px] rounded-full" />
-
-          <div className="relative z-10">
-            <span className="font-mono text-xs tracking-[0.4em] text-amber-400/60 uppercase block mb-6">
-              Join the Community
-            </span>
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight mb-6">
-              Never Miss
-              <br />
-              <span className="flicker text-amber-400">An Edit</span>
-            </h2>
-            <p className="text-white/40 max-w-lg mx-auto mb-10 leading-relaxed">
-              Follow @nexiumreal on Instagram for daily cinematic edits from the greatest
-              movies and series. Viral scenes, every single day.
-            </p>
-            <a
-              href="https://www.instagram.com/nexiumreal/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-amber-500 to-amber-600 text-black font-semibold text-sm tracking-wider uppercase hover:from-amber-400 hover:to-amber-500 transition-all duration-300 rounded-lg"
-            >
-              <Instagram className="w-5 h-5" />
-              Follow @nexiumreal
-              <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-            </a>
-          </div>
-        </motion.div>
-      </div>
-    </section>
-  );
-}
-
-/* ──────── Footer ──────── */
 function Footer() {
   return (
-    <footer className="relative border-t border-white/5 py-12 px-6 mt-auto">
-      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <Clapperboard className="w-4 h-4 text-amber-400/60" />
-          <span className="font-mono text-xs tracking-[0.2em] text-white/30 uppercase">
-            NEXIUM &copy; {new Date().getFullYear()}
-          </span>
-        </div>
-        <div className="flex items-center gap-6">
-          <a
-            href="https://www.instagram.com/nexiumreal/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-white/30 hover:text-amber-400 transition-colors"
-          >
-            <Instagram className="w-4 h-4" />
-          </a>
-        </div>
+    <footer className="border-t border-white/[0.04] py-10 px-6 mt-auto">
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <span className="text-[11px] tracking-[0.2em] text-white/20 uppercase">
+          NEXIUM &copy; {new Date().getFullYear()}
+        </span>
+        <a
+          href="https://www.instagram.com/nexiumreal/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-white/20 hover:text-amber-400 transition-colors"
+        >
+          <Instagram className="w-4 h-4" />
+        </a>
       </div>
     </footer>
   );
 }
 
-/* ───────────────────────────── Page ───────────────────────────── */
+/* ────────────── Page ────────────── */
 
 export default function Home() {
-  const [letterboxActive, setLetterboxActive] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => setLetterboxActive(window.scrollY > 50);
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const [loaded, setLoaded] = useState(false);
 
   return (
-    <main className="relative min-h-screen flex flex-col overflow-x-hidden bg-[#050505]">
-      <FilmGrainOverlay />
-      <ScanlinesOverlay />
-      <LetterboxBars active={letterboxActive} />
-      <Navbar />
-      <HeroSection />
-      <GallerySection />
-      <StatsSection />
-      <AboutSection />
-      <CTASection />
+    <main className="relative min-h-screen flex flex-col bg-[#050505]">
+      <div className="film-grain" />
+
+      {!loaded && <LoadingScreen onDone={() => setLoaded(true)} />}
+
+      <ParallaxHero loaded={loaded} />
+      <Gallery />
       <Footer />
     </main>
   );
