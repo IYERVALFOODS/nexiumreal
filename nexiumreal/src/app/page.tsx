@@ -8,7 +8,15 @@ import {
   AnimatePresence,
 } from "framer-motion";
 
-/* ─────────── REAL REEL DATA (sorted by most views) ─────────── */
+/* ─────────── REAL REEL DATA ─────────── */
+/*
+  TO ADD YOUR TOP REELS:
+  1. Go to your reel on Instagram
+  2. Copy the reel ID from the URL (e.g. /reel/XXXXXX/ → XXXXXX)
+  3. Save the thumbnail: instagram.com/p/XXXXXX/media/?size=l
+  4. Put the thumbnail in public/reels/ folder
+  5. Add an entry below with the same format
+*/
 const REELS = [
   {
     id: "DZ-Sa86BHkw",
@@ -29,6 +37,16 @@ const REELS = [
     likes: "426",
     thumb: "/reels/vampire-assistant.jpg",
     url: "https://www.instagram.com/nexiumreal/reel/DZ-SuIABZOq/",
+  },
+  {
+    id: "DbV9NbQhqfT",
+    title: "THE MAGICIANS",
+    genre: "Fantasy / Drama",
+    year: "2015–2020",
+    rating: "7.6",
+    likes: "245",
+    thumb: "/reels/magicians.jpg",
+    url: "https://www.instagram.com/nexiumreal/reel/DbV9NbQhqfT/",
   },
   {
     id: "DZ7f-DiBt3i",
