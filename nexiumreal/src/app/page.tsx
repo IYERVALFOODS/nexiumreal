@@ -8,7 +8,7 @@ import {
   AnimatePresence,
 } from "framer-motion";
 
-/* ─────────── REAL REEL DATA ─────────── */
+/* ─────────── REAL REEL DATA (sorted by most views) ─────────── */
 const REELS = [
   {
     id: "DZ-Sa86BHkw",
@@ -16,6 +16,7 @@ const REELS = [
     genre: "Action / Comedy / Spy",
     year: "2014",
     rating: "7.7",
+    likes: "898",
     thumb: "/reels/kingsman.jpg",
     url: "https://www.instagram.com/nexiumreal/reel/DZ-Sa86BHkw/",
   },
@@ -25,6 +26,7 @@ const REELS = [
     genre: "Fantasy / Adventure / Horror",
     year: "2009",
     rating: "5.8",
+    likes: "426",
     thumb: "/reels/vampire-assistant.jpg",
     url: "https://www.instagram.com/nexiumreal/reel/DZ-SuIABZOq/",
   },
@@ -34,17 +36,9 @@ const REELS = [
     genre: "Action / Comedy / Thriller",
     year: "2022",
     rating: "7.3",
+    likes: "142",
     thumb: "/reels/bullet-train.jpg",
     url: "https://www.instagram.com/nexiumreal/reel/DZ7f-DiBt3i/",
-  },
-  {
-    id: "DaqacEakU-N",
-    title: "THE FLASH",
-    genre: "Action / Adventure / Sci-Fi",
-    year: "2014–2023",
-    rating: "7.5",
-    thumb: "/reels/the-flash.jpg",
-    url: "https://www.instagram.com/nexiumreal/reel/DaqacEakU-N/",
   },
   {
     id: "Dar7YY-BZD4",
@@ -52,8 +46,19 @@ const REELS = [
     genre: "Action / Adventure / Spy",
     year: "1996–Now",
     rating: "8.0",
+    likes: "72",
     thumb: "/reels/mission-impossible.jpg",
     url: "https://www.instagram.com/nexiumreal/reel/Dar7YY-BZD4/",
+  },
+  {
+    id: "DaqacEakU-N",
+    title: "THE FLASH",
+    genre: "Action / Adventure / Sci-Fi",
+    year: "2014–2023",
+    rating: "7.5",
+    likes: "69",
+    thumb: "/reels/the-flash.jpg",
+    url: "https://www.instagram.com/nexiumreal/reel/DaqacEakU-N/",
   },
 ];
 
@@ -288,6 +293,9 @@ function ReelCard({
               <span className="text-white/50 text-xs">{reel.year}</span>
               <span className="text-amber-500/60 text-xs">
                 IMDb {reel.rating}
+              </span>
+              <span className="text-white/40 text-xs">
+                ❤ {reel.likes}
               </span>
             </div>
           </div>
